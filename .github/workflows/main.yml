@@ -43,22 +43,17 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pandas numpy
-    - name: Check data files
+    - name: Create sample data
       run: |
-        echo "Checking if data directory exists..."
-        if [ -d "data" ]; then
-          echo "✅ Data directory found!"
-          ls -la data/
-        else
-          echo "⚠️ No data directory yet - creating sample data"
-          mkdir -p data
-          echo "feature1,feature2,target" > data/sample.csv
-          echo "1.2,3.4,0" >> data/sample.csv
-          echo "2.3,4.5,1" >> data/sample.csv
-          echo "1.5,3.2,0" >> data/sample.csv
-          echo "2.8,5.1,1" >> data/sample.csv
-          echo "Created sample data for testing"
-        fi
+        echo "Creating sample data..."
+        mkdir -p data
+        echo "feature1,feature2,target" > data/sample.csv
+        echo "1.2,3.4,0" >> data/sample.csv
+        echo "2.3,4.5,1" >> data/sample.csv
+        echo "1.5,3.2,0" >> data/sample.csv
+        echo "2.8,5.1,1" >> data/sample.csv
+        echo "✅ Sample data created successfully!"
+        cat data/sample.csv
     - name: Validate data schema
       run: |
         python << EOF
@@ -88,6 +83,14 @@ jobs:
     - name: Install dependencies
       run: |
         pip install scikit-learn pandas numpy joblib
+    - name: Create data directory and file
+      run: |
+        mkdir -p data
+        echo "feature1,feature2,target" > data/sample.csv
+        echo "1.2,3.4,0" >> data/sample.csv
+        echo "2.3,4.5,1" >> data/sample.csv
+        echo "1.5,3.2,0" >> data/sample.csv
+        echo "2.8,5.1,1" >> data/sample.csv
     - name: Train simple model
       run: |
         python << EOF
