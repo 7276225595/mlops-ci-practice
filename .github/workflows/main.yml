@@ -74,19 +74,19 @@ jobs:
     
     - name: Validate data schema
       run: |
-        python -c "
-        import pandas as pd
-        try:
-            df = pd.read_csv('data/sample.csv')
-            print(f'✅ Data loaded successfully!')
-            print(f'Shape: {df.shape}')
-            print(f'Columns: {list(df.columns)}')
-            print(f'First 2 rows:')
-            print(df.head(2))
-        except Exception as e:
-            print(f'❌ Error loading data: {e}')
-            exit(1)
-        "
+        python << EOF
+import pandas as pd
+try:
+    df = pd.read_csv('data/sample.csv')
+    print(f'✅ Data loaded successfully!')
+    print(f'Shape: {df.shape}')
+    print(f'Columns: {list(df.columns)}')
+    print(f'First 2 rows:')
+    print(df.head(2))
+except Exception as e:
+    print(f'❌ Error loading data: {e}')
+    exit(1)
+EOF
 
   # Job 3: Model Training
   model-training:
@@ -108,38 +108,38 @@ jobs:
     
     - name: Train simple model
       run: |
-        python -c "
-        import pandas as pd
-        from sklearn.ensemble import RandomForestClassifier
-        from sklearn.model_selection import train_test_split
-        from sklearn.metrics import accuracy_score
-        import joblib
-        import os
+        python << EOF
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import joblib
+import os
 
-        # Load data
-        df = pd.read_csv('data/sample.csv')
-        X = df[['feature1', 'feature2']]
-        y = df['target']
+# Load data
+df = pd.read_csv('data/sample.csv')
+X = df[['feature1', 'feature2']]
+y = df['target']
 
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-        # Train model
-        model = RandomForestClassifier(n_estimators=10, random_state=42)
-        model.fit(X_train, y_train)
+# Train model
+model = RandomForestClassifier(n_estimators=10, random_state=42)
+model.fit(X_train, y_train)
 
-        # Evaluate
-        y_pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
+# Evaluate
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
 
-        print(f'✅ Model trained successfully!')
-        print(f'Accuracy: {accuracy:.2f}')
+print(f'✅ Model trained successfully!')
+print(f'Accuracy: {accuracy:.2f}')
 
-        # Save model
-        os.makedirs('models', exist_ok=True)
-        joblib.dump(model, 'models/model.pkl')
-        print('✅ Model saved to models/model.pkl')
-        "
+# Save model
+os.makedirs('models', exist_ok=True)
+joblib.dump(model, 'models/model.pkl')
+print('✅ Model saved to models/model.pkl')
+EOF
     
     - name: Upload model artifact
       uses: actions/upload-artifact@v3
