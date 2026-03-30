@@ -7,54 +7,42 @@ on:
     branches: [ main ]
 
 jobs:
-  # Job 1: Code Quality
   code-quality:
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    
     - name: Install dependencies
       run: |
         pip install flake8 black pytest
         pip install scikit-learn pandas numpy joblib
-    
     - name: Lint with flake8
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || echo "Linting issues found"
-    
     - name: Check formatting with black
       run: |
         black --check . || echo "Run 'black .' to fix formatting"
-    
     - name: Run unit tests
       run: |
         pytest tests/ -v || echo "No tests found yet"
 
-  # Job 2: Data Validation
   data-validation:
     runs-on: ubuntu-latest
     needs: code-quality
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    
     - name: Install dependencies
       run: |
         pip install pandas numpy
-    
     - name: Check data files
       run: |
         echo "Checking if data directory exists..."
@@ -71,76 +59,69 @@ jobs:
           echo "2.8,5.1,1" >> data/sample.csv
           echo "Created sample data for testing"
         fi
-    
     - name: Validate data schema
       run: |
         python << EOF
-import pandas as pd
-try:
-    df = pd.read_csv('data/sample.csv')
-    print(f'✅ Data loaded successfully!')
-    print(f'Shape: {df.shape}')
-    print(f'Columns: {list(df.columns)}')
-    print(f'First 2 rows:')
-    print(df.head(2))
-except Exception as e:
-    print(f'❌ Error loading data: {e}')
-    exit(1)
-EOF
+        import pandas as pd
+        try:
+            df = pd.read_csv('data/sample.csv')
+            print(f'✅ Data loaded successfully!')
+            print(f'Shape: {df.shape}')
+            print(f'Columns: {list(df.columns)}')
+            print(f'First 2 rows:')
+            print(df.head(2))
+        except Exception as e:
+            print(f'❌ Error loading data: {e}')
+            exit(1)
+        EOF
 
-  # Job 3: Model Training
   model-training:
     runs-on: ubuntu-latest
     needs: data-validation
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    
     - name: Install dependencies
       run: |
         pip install scikit-learn pandas numpy joblib
-    
     - name: Train simple model
       run: |
         python << EOF
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-import joblib
-import os
+        import pandas as pd
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.model_selection import train_test_split
+        from sklearn.metrics import accuracy_score
+        import joblib
+        import os
 
-# Load data
-df = pd.read_csv('data/sample.csv')
-X = df[['feature1', 'feature2']]
-y = df['target']
+        # Load data
+        df = pd.read_csv('data/sample.csv')
+        X = df[['feature1', 'feature2']]
+        y = df['target']
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-# Train model
-model = RandomForestClassifier(n_estimators=10, random_state=42)
-model.fit(X_train, y_train)
+        # Train model
+        model = RandomForestClassifier(n_estimators=10, random_state=42)
+        model.fit(X_train, y_train)
 
-# Evaluate
-y_pred = model.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
+        # Evaluate
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
 
-print(f'✅ Model trained successfully!')
-print(f'Accuracy: {accuracy:.2f}')
+        print(f'✅ Model trained successfully!')
+        print(f'Accuracy: {accuracy:.2f}')
 
-# Save model
-os.makedirs('models', exist_ok=True)
-joblib.dump(model, 'models/model.pkl')
-print('✅ Model saved to models/model.pkl')
-EOF
-    
+        # Save model
+        os.makedirs('models', exist_ok=True)
+        joblib.dump(model, 'models/model.pkl')
+        print('✅ Model saved to models/model.pkl')
+        EOF
     - name: Upload model artifact
       uses: actions/upload-artifact@v3
       with:
@@ -148,21 +129,17 @@ EOF
         path: models/model.pkl
         retention-days: 7
 
-  # Job 4: Final Report
   report:
     runs-on: ubuntu-latest
     needs: model-training
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    
     - name: Download model artifact
       uses: actions/download-artifact@v3
       with:
         name: trained-model
         path: downloaded-model/
-    
     - name: Generate report
       run: |
         echo "========================================"
